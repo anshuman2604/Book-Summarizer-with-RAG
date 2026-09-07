@@ -1,4 +1,4 @@
-﻿import logging
+import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -90,5 +90,5 @@ def health_check():
         'status': 'healthy',
         'project': settings.PROJECT_NAME,
         'llm_model': settings.LLM_MODEL,
-        'embedding_model': settings.EMBEDDING_MODEL
+        'embedding_model': settings.COHERE_EMBED_MODEL
     }
