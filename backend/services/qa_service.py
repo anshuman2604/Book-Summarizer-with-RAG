@@ -24,7 +24,7 @@ class QAService:
     """
 
     def __init__(self):
-        self.client = genai.Client(api_key=settings.GOOGLE_API_KEY)
+        self.client = genai.Client(api_key=settings.effective_gemini_key)
         self.model = settings.LLM_MODEL.replace("models/", "")
         self.config = types.GenerateContentConfig(
             temperature=0.3,

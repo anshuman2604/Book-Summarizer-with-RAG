@@ -23,7 +23,12 @@ class Settings(BaseSettings):
 
     # Google Gemini AI (LLM / Summarizer)
     GOOGLE_API_KEY: str = ""
+    GEMINI_API_KEY: str = ""
     LLM_MODEL: str = "gemini-3.6-flash"
+
+    @property
+    def effective_gemini_key(self) -> str:
+        return self.GEMINI_API_KEY or self.GOOGLE_API_KEY or os.environ.get("GEMINI_API_KEY", "") or os.environ.get("GOOGLE_API_KEY", "")
 
     # Cohere Embeddings (100 RPM Free Tier)
     COHERE_API_KEY: str = ""
