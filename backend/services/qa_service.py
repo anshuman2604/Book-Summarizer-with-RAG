@@ -87,12 +87,22 @@ class QAService:
             "--- HELPFUL ANSWER WITH PAGE CITATIONS ---"
         )
 
+        import time
+        start_time = time.time()
+        logger.info(f"[LLM Observability] Querying {self.model} with {len(top_chunks)} retrieved context chunks...")
+
         response = self.client.models.generate_content(
             model=self.model,
             contents=prompt,
             config=self.config
         )
+        latency = time.time() - start_time
         answer_text = response.text.strip()
+
+        logger.info(
+            f"[LLM Observability] Answer generated in {latency:.2f}s | "
+            f"Context Chunks: {len(top_chunks)} | Model: {self.model}"
+        )
 
         # Step 4: Persist chat messages to Supabase database
         user_msg = ChatHistory(

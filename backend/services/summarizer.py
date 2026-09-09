@@ -64,15 +64,22 @@ class BookSummarizerService:
             f"Final ~100-Word Summary:"
         )
 
-        logger.info(f"Sending single prompt synthesis call to Gemini for {len(sampled_chunks)} book sections...")
+        import time
+        start_time = time.time()
+        logger.info(f"[LLM Observability] Sending single-prompt synthesis to {self.model} with {len(sampled_chunks)} book sections...")
         response = self.client.models.generate_content(
             model=self.model,
             contents=prompt,
             config=self.config
         )
+        latency = time.time() - start_time
         summary_text = response.text.strip()
+        word_count = len(summary_text.split())
 
-        logger.info(f"100-word summary generated successfully! Length: {len(summary_text.split())} words.")
+        logger.info(
+            f"[LLM Observability] Summary generated in {latency:.2f}s | "
+            f"Word Count: {word_count} | Model: {self.model}"
+        )
         return summary_text
 
 
