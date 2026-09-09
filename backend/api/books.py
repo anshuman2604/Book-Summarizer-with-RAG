@@ -260,6 +260,11 @@ def delete_book(
             detail="Book not found or access denied."
         )
 
+    # Direct SQL deletion: deletes all child chunks and chat records in 1 instant query
+    # instead of SQLAlchemy loading 600+ chunks into Python memory one-by-one!
+    db.query(ChatHistory).filter(ChatHistory.book_id == book_id).delete(synchronize_session=False)
+    db.query(BookChunk).filter(BookChunk.book_id == book_id).delete(synchronize_session=False)
     db.delete(book)
     db.commit()
+    logger.info(f"Book {book_id} and all related vectors deleted in milliseconds.")
     return None
