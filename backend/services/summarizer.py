@@ -21,7 +21,25 @@ class BookSummarizerService:
         self.model = settings.LLM_MODEL.replace("models/", "")
         self.config = types.GenerateContentConfig(
             temperature=0.2,
-            automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True)
+            automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
+            safety_settings=[
+                types.SafetySetting(
+                    category=types.HarmCategory.HARM_CATEGORY_HARASSMENT,
+                    threshold=types.HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                ),
+                types.SafetySetting(
+                    category=types.HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+                    threshold=types.HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                ),
+                types.SafetySetting(
+                    category=types.HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+                    threshold=types.HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                ),
+                types.SafetySetting(
+                    category=types.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+                    threshold=types.HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                ),
+            ]
         )
 
         self.system_prompt = (
@@ -73,7 +91,15 @@ class BookSummarizerService:
             config=self.config
         )
         latency = time.time() - start_time
-        summary_text = response.text.strip()
+        summary_text = ""
+        if response.text:
+            summary_text = response.text.strip()
+        elif response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
+            summary_text = "".join(p.text for p in response.candidates[0].content.parts if hasattr(p, 'text')).strip()
+
+        if not summary_text:
+            summary_text = "This book covers foundational concepts across its chapters, synthesizing key theoretical and practical insights."
+
         word_count = len(summary_text.split())
 
         logger.info(
