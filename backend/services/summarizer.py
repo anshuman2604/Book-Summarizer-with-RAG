@@ -92,10 +92,15 @@ class BookSummarizerService:
         )
         latency = time.time() - start_time
         summary_text = ""
-        if response.text:
-            summary_text = response.text.strip()
-        elif response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
-            summary_text = "".join(p.text for p in response.candidates[0].content.parts if hasattr(p, 'text')).strip()
+        try:
+            summary_text = (response.text or "").strip()
+        except Exception:
+            # If response.text raises a ValueError due to safety filters, read candidates directly
+            try:
+                if response.candidates and response.candidates[0].content and response.candidates[0].content.parts:
+                    summary_text = "".join(p.text for p in response.candidates[0].content.parts if hasattr(p, 'text')).strip()
+            except Exception:
+                pass
 
         if not summary_text:
             summary_text = "This book covers foundational concepts across its chapters, synthesizing key theoretical and practical insights."
