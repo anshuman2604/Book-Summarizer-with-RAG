@@ -75,6 +75,17 @@ export default function Dashboard() {
       setToken(storedToken);
       setUserEmail(storedEmail || '');
     }
+
+    const handleExpired = () => {
+      setToken(null);
+      setUserEmail('');
+      setBooks([]);
+      setSelectedBook(null);
+      setChatMessages([]);
+    };
+
+    window.addEventListener('auth-expired', handleExpired);
+    return () => window.removeEventListener('auth-expired', handleExpired);
   }, []);
 
   // Fetch books history whenever token changes

@@ -16,3 +16,19 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// Automatically handle expired tokens (401 Unauthorized)
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userEmail');
+        // Dispatch storage event so page.tsx automatically switches to login view
+        window.dispatchEvent(new Event('auth-expired'));
+      }
+    }
+    return Promise.reject(error);
+  }
+);
