@@ -14,7 +14,10 @@ import {
   CheckCircle2, 
   AlertCircle,
   HelpCircle,
-  Loader2
+  Loader2,
+  Menu,
+  X,
+  MessageSquare
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
@@ -57,6 +60,10 @@ export default function Dashboard() {
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [question, setQuestion] = useState('');
+
+  // Responsive mobile states
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mobileTab, setMobileTab] = useState<'summary' | 'chat'>('chat');
 
   // Loading states
   const [isUploading, setIsUploading] = useState(false);
@@ -118,6 +125,7 @@ export default function Dashboard() {
 
   const selectBook = async (book: Book) => {
     setSelectedBook(book);
+    setIsMobileMenuOpen(false);
     try {
       const res = await api.get(`/books/${book.id}/chat/history`);
       setChatMessages(res.data);
@@ -370,8 +378,20 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Mobile Drawer Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-sm lg:hidden transition-opacity"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar: Books History & Upload */}
-      <div className="w-80 bg-slate-950 border-r border-slate-800 flex flex-col shrink-0">
+      <div
+        className={`fixed lg:static inset-y-0 left-0 z-40 w-72 sm:w-80 bg-slate-950 border-r border-slate-800 flex flex-col shrink-0 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+          isMobileMenuOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
+        }`}
+      >
         {/* Header */}
         <div className="p-4 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2.5 overflow-hidden">
@@ -383,13 +403,22 @@ export default function Dashboard() {
               <p className="text-xs text-slate-400 truncate">{userEmail}</p>
             </div>
           </div>
-          <button
-            onClick={handleLogout}
-            title="Logout"
-            className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-900 rounded-lg transition"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleLogout}
+              title="Logout"
+              className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-900 rounded-lg transition"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="p-2 text-slate-400 hover:text-white hover:bg-slate-900 rounded-lg lg:hidden"
+              title="Close menu"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Upload Button */}
@@ -458,53 +487,97 @@ export default function Dashboard() {
 
       {/* Main Content Area */}
       {selectedBook ? (
-        <div className="flex-1 flex flex-col h-full bg-slate-900 overflow-hidden">
-          {/* Top Bar: Book Metadata */}
-          <div className="p-4 border-b border-slate-800 bg-slate-950/60 backdrop-blur flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-white">{selectedBook.title}</h2>
-              <div className="flex items-center gap-3 text-xs text-slate-400 mt-0.5">
-                <span>{selectedBook.total_pages} Pages</span>
-                <span>•</span>
-                <span>Format: {selectedBook.file_type.toUpperCase()}</span>
-                <span>•</span>
-                <span className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  {new Date(selectedBook.created_at).toLocaleDateString()}
-                </span>
+        <div className="flex-1 flex flex-col h-full bg-slate-900 overflow-hidden w-full">
+          {/* Top Bar: Book Metadata & Mobile Toggle */}
+          <div className="p-3 sm:p-4 border-b border-slate-800 bg-slate-950/60 backdrop-blur flex items-center justify-between gap-2">
+            <div className="flex items-center gap-3 overflow-hidden">
+              <button
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg lg:hidden shrink-0"
+                title="Open books menu"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+              <div className="overflow-hidden">
+                <h2 className="text-base sm:text-lg font-bold text-white truncate">{selectedBook.title}</h2>
+                <div className="flex items-center gap-2 sm:gap-3 text-[11px] sm:text-xs text-slate-400 mt-0.5 truncate">
+                  <span>{selectedBook.total_pages} Pages</span>
+                  <span>•</span>
+                  <span>{selectedBook.file_type.toUpperCase()}</span>
+                  <span className="hidden sm:inline">•</span>
+                  <span className="hidden sm:flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    {new Date(selectedBook.created_at).toLocaleDateString()}
+                  </span>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-medium rounded-full">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>pgvector Indexed</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] sm:text-xs font-medium rounded-full shrink-0">
+              <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+              <span className="hidden sm:inline">pgvector Indexed</span>
+              <span className="sm:hidden">Indexed</span>
             </div>
           </div>
 
-          {/* Center Area: Split between 100-Word Summary and Q&A Chat */}
-          <div className="flex-1 flex overflow-hidden">
+          {/* Mobile Tab Switcher (Visible only on small screens) */}
+          <div className="flex lg:hidden border-b border-slate-800 bg-slate-950/40 shrink-0">
+            <button
+              onClick={() => setMobileTab('chat')}
+              className={`flex-1 py-2.5 text-xs font-semibold flex items-center justify-center gap-2 border-b-2 transition ${
+                mobileTab === 'chat'
+                  ? 'border-blue-500 text-blue-400 bg-blue-500/10'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>Q&A Chat</span>
+            </button>
+            <button
+              onClick={() => setMobileTab('summary')}
+              className={`flex-1 py-2.5 text-xs font-semibold flex items-center justify-center gap-2 border-b-2 transition ${
+                mobileTab === 'summary'
+                  ? 'border-blue-500 text-blue-400 bg-blue-500/10'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>100-Word Summary</span>
+            </button>
+          </div>
+
+          {/* Center Area: Responsive Split */}
+          <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
             {/* Left Box: 100-Word Summary Card */}
-            <div className="w-1/3 border-r border-slate-800 p-6 overflow-y-auto flex flex-col bg-slate-900/50">
+            <div
+              className={`w-full lg:w-1/3 border-b lg:border-b-0 lg:border-r border-slate-800 p-4 sm:p-6 overflow-y-auto flex-col bg-slate-900/50 ${
+                mobileTab === 'summary' ? 'flex' : 'hidden lg:flex'
+              }`}
+            >
               <div className="flex items-center gap-2 mb-3 text-blue-400">
-                <Sparkles className="w-5 h-5" />
-                <h3 className="font-bold text-sm tracking-wide uppercase">100-Word Executive Summary</h3>
+                <Sparkles className="w-5 h-5 shrink-0" />
+                <h3 className="font-bold text-xs sm:text-sm tracking-wide uppercase">100-Word Executive Summary</h3>
               </div>
-              <div className="p-5 bg-slate-800 border border-slate-700 rounded-2xl shadow-inner text-slate-200 text-sm leading-relaxed space-y-3">
+              <div className="p-4 sm:p-5 bg-slate-800 border border-slate-700 rounded-2xl shadow-inner text-slate-200 text-xs sm:text-sm leading-relaxed space-y-3">
                 <p className="italic text-slate-300">
                   "{selectedBook.summary_100_words || 'Summary was not generated for this book.'}"
                 </p>
               </div>
-              <div className="mt-4 text-xs text-slate-400 flex items-center gap-1.5">
-                <HelpCircle className="w-3.5 h-3.5" />
+              <div className="mt-4 text-[11px] sm:text-xs text-slate-400 flex items-center gap-1.5">
+                <HelpCircle className="w-3.5 h-3.5 shrink-0" />
                 <span>Generated via LangChain Map-Reduce over 6 macro-sections.</span>
               </div>
             </div>
 
             {/* Right Box: RAG Q&A Chat */}
-            <div className="flex-1 flex flex-col h-full bg-slate-900">
+            <div
+              className={`flex-1 flex flex-col h-full bg-slate-900 overflow-hidden ${
+                mobileTab === 'chat' ? 'flex' : 'hidden lg:flex'
+              }`}
+            >
               {/* Chat Messages */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-4">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
                 {chatMessages.length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center text-center text-slate-400 max-w-sm mx-auto">
+                  <div className="h-full flex flex-col items-center justify-center text-center text-slate-400 max-w-sm mx-auto p-4">
                     <div className="p-4 bg-slate-800/60 rounded-full mb-3">
                       <HelpCircle className="w-8 h-8 text-blue-400" />
                     </div>
@@ -520,7 +593,7 @@ export default function Dashboard() {
                       className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
                     >
                       <div
-                        className={`max-w-2xl px-5 py-3.5 rounded-2xl text-sm leading-relaxed ${
+                        className={`max-w-full sm:max-w-2xl px-4 sm:px-5 py-3 sm:py-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed ${
                           msg.role === 'user'
                             ? 'bg-blue-600 text-white rounded-br-none shadow-md shadow-blue-600/20'
                             : 'bg-slate-800 border border-slate-700 text-slate-200 rounded-bl-none shadow-sm markdown-body'
@@ -529,7 +602,7 @@ export default function Dashboard() {
                         {msg.role === 'user' ? (
                           <p className="whitespace-pre-wrap">{msg.content}</p>
                         ) : (
-                          <div className="space-y-2 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_h3]:font-bold [&_h3]:text-base [&_h3]:mt-3 [&_h3]:mb-1 [&_h2]:font-bold [&_h2]:text-lg [&_h2]:mt-4 [&_h2]:mb-2 [&_hr]:my-3 [&_hr]:border-slate-700 [&_.katex-display]:my-3 [&_.katex-display]:overflow-x-auto [&_.katex-display]:py-1">
+                          <div className="space-y-2 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_h3]:font-bold [&_h3]:text-sm sm:[&_h3]:text-base [&_h3]:mt-3 [&_h3]:mb-1 [&_h2]:font-bold [&_h2]:text-base sm:[&_h2]:text-lg [&_h2]:mt-4 [&_h2]:mb-2 [&_hr]:my-3 [&_hr]:border-slate-700 [&_.katex-display]:my-2 [&_.katex-display]:overflow-x-auto [&_.katex-display]:py-1">
                             <ReactMarkdown
                               remarkPlugins={[remarkMath]}
                               rehypePlugins={[rehypeKatex]}
@@ -544,7 +617,7 @@ export default function Dashboard() {
                 )}
                 {isAsking && (
                   <div className="flex items-start">
-                    <div className="px-5 py-3.5 bg-slate-800 border border-slate-700 rounded-2xl rounded-bl-none text-slate-400 text-sm flex items-center gap-2">
+                    <div className="px-4 py-3 bg-slate-800 border border-slate-700 rounded-2xl rounded-bl-none text-slate-400 text-xs sm:text-sm flex items-center gap-2">
                       <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" />
                       <span>Agent retrieving vector embeddings & citing pages...</span>
                     </div>
@@ -554,23 +627,23 @@ export default function Dashboard() {
               </div>
 
               {/* Chat Input Bar */}
-              <div className="p-4 border-t border-slate-800 bg-slate-950/40">
+              <div className="p-3 sm:p-4 border-t border-slate-800 bg-slate-950/40">
                 <form onSubmit={handleSendMessage} className="flex gap-2 max-w-4xl mx-auto">
                   <input
                     type="text"
                     value={question}
                     onChange={(e) => setQuestion(e.target.value)}
-                    placeholder={`Ask any question about "${selectedBook.title}" (answers include page citations)...`}
+                    placeholder="Ask any question about this book..."
                     disabled={isAsking}
-                    className="flex-1 px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-3.5 py-2.5 sm:px-4 sm:py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <button
                     type="submit"
                     disabled={!question.trim() || isAsking}
-                    className="px-5 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl transition flex items-center gap-2 shadow-lg shadow-blue-600/30 font-medium text-sm"
+                    className="px-3.5 py-2.5 sm:px-5 sm:py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl transition flex items-center gap-1.5 sm:gap-2 shadow-lg shadow-blue-600/30 font-medium text-xs sm:text-sm shrink-0"
                   >
-                    <Send className="w-4 h-4" />
-                    <span>Ask Agent</span>
+                    <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Ask Agent</span>
                   </button>
                 </form>
               </div>
