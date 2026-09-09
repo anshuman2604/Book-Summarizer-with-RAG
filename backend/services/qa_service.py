@@ -91,7 +91,7 @@ class QAService:
 
         import time
         start_time = time.time()
-        logger.info(f"[LLM Observability] Querying {self.model} with {len(top_chunks)} retrieved context chunks...")
+        logger.info(f"[LLM Observability] Querying {self.model} with {len(relevant_chunks)} retrieved context chunks...")
 
         client = genai.Client(api_key=settings.effective_gemini_key)
         response = client.models.generate_content(
@@ -104,7 +104,7 @@ class QAService:
 
         logger.info(
             f"[LLM Observability] Answer generated in {latency:.2f}s | "
-            f"Context Chunks: {len(top_chunks)} | Model: {self.model}"
+            f"Context Chunks: {len(relevant_chunks)} | Model: {self.model}"
         )
 
         # Step 4: Persist chat messages to Supabase database

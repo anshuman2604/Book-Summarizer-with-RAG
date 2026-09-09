@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
 from sqlalchemy.orm import Session
 
 from backend.db.session import get_db
-from backend.models.models import User, Book, ChatHistory
+from backend.models.models import User, Book, BookChunk, ChatHistory
 from backend.api.deps import get_current_user
 from backend.schemas.schemas import (
     BookResponse,
