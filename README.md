@@ -9,7 +9,6 @@ An intelligent, multi-tenant RAG application capable of ingesting massive 500+ p
 - **Massive Document Support (500+ Pages):** Powered by PyMuPDF (compiled C engine) for near-instant text extraction.
 - **RAG Agent with Strict Grounding:** Semantic retrieval over PostgreSQL `pgvector` using cosine similarity (`<=>`). All claims are cited with `[Page X]` stamps.
 - **100-Word Executive Summary:** Distills whole books using equidistant macro-sampling and single-call LLM synthesis.
-- **Scientific Formula & LaTeX Rendering:** Renders complex chemical formulas, state symbols, and equations directly inside chat responses.
 - **Multi-Tenant Authentication & Session History:** Secure JWT authentication with user-isolated book history and chat persistence.
 - **Production-Ready Modularity:** Clean separation between FastAPI backend, Supabase pgvector database, and Next.js 14 frontend.
 
@@ -85,17 +84,3 @@ npm run dev -p 3000
 Open `http://localhost:3000` in your browser.
 
 ---
-
-## Deployment Guide
-
-### Deploy Backend (Render / Railway)
-1. Link your GitHub repository.
-2. Set Build Command: `pip install -r requirements.txt`
-3. Set Start Command: `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`
-4. Provide Environment Variables: `DATABASE_URL`, `SECRET_KEY`, `GEMINI_API_KEY`, `COHERE_API_KEY`.
-
-### Deploy Frontend (Vercel)
-1. Import repository on Vercel.
-2. Set Root Directory to `frontend`.
-3. Set Environment Variable: `NEXT_PUBLIC_API_URL=https://your-backend-service.onrender.com/api/v1`
-4. Click Deploy.
