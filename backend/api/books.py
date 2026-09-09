@@ -1,4 +1,4 @@
-﻿import logging
+import logging
 from typing import List
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
@@ -84,7 +84,8 @@ async def upload_book(
     try:
         summary_100_words = book_summarizer_service.summarize_book(chunks_data)
     except Exception as e:
-        logger.error(f"Error generating summary for {filename}: {str(e)}")
+        import traceback
+        logger.error(f"Error generating summary for {filename}: {repr(e)}\n{traceback.format_exc()}")
         summary_100_words = "Summary generation encountered a temporary error."
 
     # Step 4: Create Book record in Supabase
