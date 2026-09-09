@@ -91,7 +91,8 @@ class QAService:
         start_time = time.time()
         logger.info(f"[LLM Observability] Querying {self.model} with {len(top_chunks)} retrieved context chunks...")
 
-        response = self.client.models.generate_content(
+        client = genai.Client(api_key=settings.effective_gemini_key)
+        response = client.models.generate_content(
             model=self.model,
             contents=prompt,
             config=self.config

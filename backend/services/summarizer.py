@@ -18,7 +18,6 @@ class BookSummarizerService:
     """
 
     def __init__(self):
-        self.client = genai.Client(api_key=settings.effective_gemini_key)
         self.model = settings.LLM_MODEL.replace("models/", "")
         self.config = types.GenerateContentConfig(
             temperature=0.2,
@@ -67,7 +66,8 @@ class BookSummarizerService:
         import time
         start_time = time.time()
         logger.info(f"[LLM Observability] Sending single-prompt synthesis to {self.model} with {len(sampled_chunks)} book sections...")
-        response = self.client.models.generate_content(
+        client = genai.Client(api_key=settings.effective_gemini_key)
+        response = client.models.generate_content(
             model=self.model,
             contents=prompt,
             config=self.config
