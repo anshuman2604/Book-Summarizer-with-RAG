@@ -49,3 +49,11 @@ class Settings(BaseSettings):
 
 # Instantiate a singleton settings object for the entire app
 settings = Settings()
+
+# Automatically propagate LangSmith environment variables to process env
+if settings.LANGCHAIN_TRACING_V2.lower() == "true" and settings.LANGCHAIN_API_KEY:
+    os.environ["LANGCHAIN_TRACING_V2"] = "true"
+    os.environ["LANGCHAIN_API_KEY"] = settings.LANGCHAIN_API_KEY
+    os.environ["LANGCHAIN_PROJECT"] = settings.LANGCHAIN_PROJECT or "book-summarizer-agent"
+    os.environ["LANGSMITH_API_KEY"] = settings.LANGCHAIN_API_KEY
+    os.environ["LANGSMITH_PROJECT"] = settings.LANGCHAIN_PROJECT or "book-summarizer-agent"

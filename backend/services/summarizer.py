@@ -2,6 +2,7 @@ import logging
 from typing import List, Dict, Any
 from google import genai
 from google.genai import types
+from langsmith import traceable
 
 from backend.core.config import settings
 
@@ -51,6 +52,7 @@ class BookSummarizerService:
             "Provide only the direct, powerful ~100-word summary."
         )
 
+    @traceable(name="gemini_book_summarizer", run_type="llm")
     def summarize_book(self, chunks: List[Dict[str, Any]]) -> str:
         """
         Generates strict ~100-word executive summary in 1 single high-efficiency API call.

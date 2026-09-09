@@ -4,6 +4,7 @@ from uuid import UUID
 from sqlalchemy.orm import Session
 from google import genai
 from google.genai import types
+from langsmith import traceable
 
 from backend.core.config import settings
 from backend.services.vector_store import vector_store_service
@@ -31,6 +32,7 @@ class QAService:
             automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True)
         )
 
+    @traceable(name="rag_qa_agent", run_type="chain")
     def answer_question(
         self,
         db: Session,
