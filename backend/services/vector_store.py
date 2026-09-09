@@ -106,9 +106,9 @@ class VectorStoreService:
             db.commit()
             logger.info(f"Saved chunks {i + 1} to {min(i + batch_size, total_chunks)} of {total_chunks}.")
 
-            # Gentle 0.3s delay between batches for smooth network flow
+            # 0.7s spacing between batches to keep comfortably under Cohere rate limits
             if i + batch_size < total_chunks:
-                time.sleep(0.3)
+                time.sleep(0.7)
 
         return total_chunks
 
